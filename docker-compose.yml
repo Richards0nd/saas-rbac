@@ -1,0 +1,16 @@
+services:
+  database:
+    image: postgres:latest
+    container_name: saas
+    restart: always
+    ports:
+      - ${POSTGRES_PORT}:5432
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=saas
+    volumes:
+      - pgsql:/var/lib/postgresql/data
+
+volumes:
+  pgsql:
