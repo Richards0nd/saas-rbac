@@ -16,6 +16,7 @@ import { errorHandler } from './errorHandler'
 import { requestPasswordRecovery } from './routes/auth/request-password-recovery'
 import { resetPassword } from './routes/auth/reset-password'
 import { authenticateWithGithub } from './routes/auth/authenticate-with-github'
+import { env } from '@saas/env'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -38,7 +39,7 @@ app.register(fastifySwagger, {
 
 app.register(fastifySwaggerUI, { routePrefix: '/docs' })
 
-app.register(fastifyJwt, { secret: 'supersecret' })
+app.register(fastifyJwt, { secret: env.JWT_SECRET })
 
 app.register(fastifyCors)
 
@@ -50,6 +51,8 @@ app.register(getProfile)
 app.register(requestPasswordRecovery)
 app.register(resetPassword)
 
-app.listen({ port: 3000 }).then(() => {
-	console.log('Server is running on http://localhost:3000')
+app.listen({ host: env.SERVER_HOST, port: env.SERVER_PORT }).then(() => {
+	console.log(
+		`Server listening on http://${env.SERVER_HOST}:${env.SERVER_PORT}`
+	)
 })
