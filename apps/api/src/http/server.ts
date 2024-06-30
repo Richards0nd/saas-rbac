@@ -26,18 +26,19 @@ app.setValidatorCompiler(validatorCompiler)
 app.setErrorHandler(errorHandler)
 
 app.register(fastifySwagger, {
-	swagger: {
+	openapi: {
 		info: {
 			title: 'SAAS',
 			description: 'Full-stack Saas app with multi-tenant & RBAC',
 			version: '1.0.0'
 		},
-		securityDefinitions: {
-			Authorization: {
-				type: 'apiKey',
-				in: 'header',
-				name: 'Authorization',
-				description: 'JWT token for authentication'
+		components: {
+			securitySchemes: {
+				bearerAuth: {
+					type: 'http',
+					scheme: 'bearer',
+					bearerFormat: 'JWT'
+				}
 			}
 		}
 	},
