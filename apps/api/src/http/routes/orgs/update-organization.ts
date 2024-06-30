@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { BadRequestError } from '../_errors/bad-request-error'
 import { UnauthorizedError } from '../_errors/unauthorized-error'
 import { getUserPermissions } from '@/utils/get-user-permissions'
+import { organizationSchema } from '@saas/auth'
 
 export async function updateteOrganization(app: FastifyInstance) {
 	app
