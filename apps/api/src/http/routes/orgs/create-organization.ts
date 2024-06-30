@@ -1,7 +1,10 @@
 import { auth } from '@/http/middlewares/auth'
+import { prisma } from '@/lib/prisma'
 import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
+import { BadRequestError } from '../_errors/bad-request-error'
+import { createSlug } from '@/utils/create-slug'
 
 export async function createOrganization(app: FastifyInstance) {
 	app
@@ -17,10 +20,51 @@ export async function createOrganization(app: FastifyInstance) {
 					body: z.object({
 						name: z.string(),
 						domain: z.string().nullish(),
-						shouldAttachUsersByDomain: z.boolean().nullish()
-					})
+						shouldAttachUsersByDomain: z.boolean().optional()
+					}),
+					response: {
+						201: z.object({
+							organizationId: z.string().uuid()
+						})
+					}
 				}
 			},
-			(req, res) => {}
+			async (req, res) => {
+				const userId = await req.getCurrentUserId()
+				const { name, domain, shouldAttachUsersByDomain } = req.body
+
+				if (domain) {
+					const organizationByDomain = await prisma.organization.findUnique({
+						where: {
+							domain
+						}
+					})
+
+					if (organizationByDomain)
+						throw new BadRequestError(
+							'Organization with this domain already exists'
+						)
+				}
+
+				const organization = await prisma.organization.create({
+					data: {
+						name,
+						domain,
+						slug: createSlug(name),
+						shouldAttachUsersByDomain,
+						ownerId: userId,
+						members: {
+							create: {
+								userId,
+								role: 'ADMIN'
+							}
+						}
+					}
+				})
+
+				return res.status(201).send({
+					organizationId: organization.id
+				})
+			}
 		)
 }
